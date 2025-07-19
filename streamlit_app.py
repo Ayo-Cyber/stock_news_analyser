@@ -8,15 +8,15 @@ from spacy import displacy
 
 # Define paths for model and vectorizer
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(PROJECT_ROOT, 'models', 'random_forest_model.pkl')
-VECTORIZER_PATH = os.path.join(PROJECT_ROOT, 'models', 'count_vectorizer.pkl')
+MODELS_DIR = os.path.join(PROJECT_ROOT, 'models')
+VECTORIZER_PATH = os.path.join(MODELS_DIR, 'tfidf_vectorizer.pkl')
 
 # Load the predictor and NER extractor
 @st.cache_resource
 def load_models():
     predictor = None
-    if os.path.exists(MODEL_PATH) and os.path.exists(VECTORIZER_PATH):
-        predictor = StockSentimentPredictor(MODEL_PATH, VECTORIZER_PATH)
+    if os.path.exists(os.path.join(MODELS_DIR, 'best_model.pkl')) and os.path.exists(VECTORIZER_PATH):
+        predictor = StockSentimentPredictor(MODELS_DIR, VECTORIZER_PATH)
     ner_extractor = NERExtractor()
     return predictor, ner_extractor
 
@@ -85,7 +85,7 @@ else:
             headlines = [h.strip() for h in user_input.split('\n') if h.strip()]
             if headlines:
                 with st.spinner('🧠 Performing analysis...'):
-                    predictions = predictor.predict_sentiment(pd.Series(headlines))
+                    predictions = predictor.predict_sentiment(headlines)
                     
                     st.subheader("Analysis Results")
 
@@ -94,7 +94,7 @@ else:
                         sentiment_label = "Up" if sentiment == 1 else "Down/Same"
                         sentiment_icon = "🔼" if sentiment == 1 else "🔽"
 
-                        st.markdown(f'<div class="results-card">', unsafe_allow_html=True)
+
                         
                         col1, col2 = st.columns([4, 1])
                         
@@ -136,3 +136,4 @@ st.sidebar.markdown(
     3. **Analyze:** Enter headlines and click 'Analyze'.
     """
 )
+

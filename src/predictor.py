@@ -1,6 +1,5 @@
 import joblib
 import os
-import json
 import pandas as pd
 from .preprocessor import TextPreprocessor
 from .feature_extractor import FeatureExtractor
@@ -32,10 +31,9 @@ class StockSentimentPredictor:
         Loads the fitted vectorizer.
         """
         try:
-            # Use the FeatureExtractor's class method to load the vectorizer
-            self.feature_extractor = FeatureExtractor.load_vectorizer(vectorizer_path)
+            vectorizer = joblib.load(vectorizer_path)
             print(f"Vectorizer loaded successfully from {vectorizer_path}")
-            return self.feature_extractor
+            return vectorizer
         except FileNotFoundError:
             print(f"Error: Vectorizer file not found at {vectorizer_path}")
             return None
@@ -48,7 +46,7 @@ class StockSentimentPredictor:
         Predicts the sentiment (stock movement) for new headlines.
 
         Args:
-            headlines (list or pd.Series): A list or pandas Series of raw headlines.
+            headlines (list): A list of raw headlines.
 
         Returns:
             list: Predicted labels (0 for down/same, 1 for up).
@@ -57,36 +55,26 @@ class StockSentimentPredictor:
             print("Model or vectorizer not loaded. Cannot make predictions.")
             return []
 
-        # Ensure headlines is a DataFrame for preprocessing
-        if isinstance(headlines, list):
-            # Create a DataFrame with a single row and multiple columns
-            headlines_df = pd.DataFrame([headlines], columns=[f'Top{i+1}' for i in range(len(headlines))])
-        elif isinstance(headlines, pd.Series):
-            headlines_df = pd.DataFrame([headlines.tolist()], columns=[f'Top{i+1}' for i in range(len(headlines))])
-        elif isinstance(headlines, pd.DataFrame):
-            headlines_df = headlines
-        else:
-            raise ValueError("Input 'headlines' must be a list, pandas Series, or pandas DataFrame.")
-
+        # The preprocessor expects a DataFrame
+        headlines_df = pd.DataFrame(headlines, columns=['headline'])
+        
         # Preprocess the headlines
         processed_headlines = self.preprocessor.preprocess_headlines(headlines_df)
 
         # Transform headlines into features using the loaded vectorizer
-        features = self.feature_extractor.vectorizer.transform(processed_headlines).toarray()
+        features = self.feature_extractor.transform(processed_headlines).toarray()
 
         # Make prediction
         predictions = self.model.predict(features)
         return predictions.tolist()
 
 if __name__ == '__main__':
-    import pandas as pd
     import os
 
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     models_dir = os.path.join(project_root, 'models')
     
     # Determine which vectorizer to use based on the training script
-    # For this example, we assume tfidf was used as in the new model_trainer
     vectorizer_path = os.path.join(models_dir, 'tfidf_vectorizer.pkl')
 
     # Dummy data for demonstration

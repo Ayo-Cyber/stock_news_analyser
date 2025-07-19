@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 
-def load_and_split_data(file_path, train_date_split='20150101'):
+def load_and_split_data(file_path, train_date_split='20150101', test_date_split='20141231'):
     """
     Loads the stock headlines data, handles missing values, and splits it into
     training and testing sets based on a date.
@@ -29,7 +29,7 @@ def load_and_split_data(file_path, train_date_split='20150101'):
 
     # Splitting the dataset into train and test set
     train = df_copy[df_copy['Date'] < train_date_split]
-    test = df_copy[df_copy['Date'] > train_date_split]
+    test = df_copy[df_copy['Date'] > test_date_split]
 
     # Splitting the dataset into features (headlines) and labels
     y_train = train['Label']
