@@ -84,33 +84,33 @@ else:
         if user_input:
             headlines = [h.strip() for h in user_input.split('\n') if h.strip()]
             if headlines:
+                st.subheader("Analysis Results")
                 with st.spinner('🧠 Performing analysis...'):
-                    predictions = predictor.predict_sentiment(headlines)
-                    
-                    st.subheader("Analysis Results")
+                    for headline in headlines:
+                        # st.markdown(f'<div class="results-card">', unsafe_allow_html=True)
+                        if ner_extractor.is_finance_related(headline):
+                            # Perform prediction for finance-related headlines
+                            prediction = predictor.predict_sentiment([headline])[0]
+                            sentiment_label = "Up" if prediction == 1 else "Down/Same"
+                            sentiment_icon = "🔼" if prediction == 1 else "🔽"
 
-                    for i, headline in enumerate(headlines):
-                        sentiment = predictions[i]
-                        sentiment_label = "Up" if sentiment == 1 else "Down/Same"
-                        sentiment_icon = "🔼" if sentiment == 1 else "🔽"
+                            col1, col2 = st.columns([4, 1])
+                            with col1:
+                                st.markdown(f"**Headline:** {headline}")
+                            with col2:
+                                st.markdown(f"**Sentiment:** {sentiment_label} {sentiment_icon}")
 
-
-                        
-                        col1, col2 = st.columns([4, 1])
-                        
-                        with col1:
+                            with st.expander("Named Entity Recognition"):
+                                doc = ner_extractor.nlp(headline)
+                                ent_html = displacy.render(doc, style="ent", jupyter=False)
+                                st.markdown(ent_html, unsafe_allow_html=True)
+                        else:
+                            # Handle non-finance-related headlines
                             st.markdown(f"**Headline:** {headline}")
+                            st.warning("This headline does not appear to be finance-related.")
                         
-                        with col2:
-                            st.markdown(f"**Sentiment:** {sentiment_label} {sentiment_icon}")
-
-                        with st.expander("Named Entity Recognition"):
-                            doc = ner_extractor.nlp(headline)
-                            ent_html = displacy.render(doc, style="ent", jupyter=False)
-                            st.markdown(ent_html, unsafe_allow_html=True)
-                            
                         st.markdown(f'</div>', unsafe_allow_html=True)
-
+                        st.markdown("<br>", unsafe_allow_html=True)
             else:
                 st.warning("Please enter at least one headline.")
         else:

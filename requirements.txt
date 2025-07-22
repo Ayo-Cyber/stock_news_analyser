@@ -1,10 +1,9 @@
 pandas
-numpy
 scikit-learn
-nltk
-joblib
 streamlit
 spacy
-xgboost
-matplotlib
-seaborn
+# https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1.tar.gz#egg=en_core_web_sm
+transformers
+torch
+google-generativeai
+python-dotenv

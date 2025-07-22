@@ -3,6 +3,7 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 import pandas as pd
+from .gemini_client import GeminiClient
 
 # Download stopwords if not already downloaded
 try:
@@ -14,6 +15,7 @@ class TextPreprocessor:
     def __init__(self):
         self.ps = PorterStemmer()
         self.stopwords_set = set(stopwords.words('english'))
+        self.gemini_client = GeminiClient()
 
     def preprocess_headlines(self, df_headlines):
         """
@@ -40,6 +42,17 @@ class TextPreprocessor:
         combined_headlines = []
         for row_index in range(temp_df.shape[0]):
             combined_headlines.append(' '.join(str(x) for x in temp_df.iloc[row_index, :]))
+
+        # Filter news using Gemini
+        classifications = self.gemini_client.filter_news(combined_headlines)
+        if classifications:
+            try:
+                import json
+                classifications = json.loads(classifications)['classifications']
+                combined_headlines = [h for h, c in zip(combined_headlines, classifications) if c == 'core finance']
+            except (json.JSONDecodeError, KeyError):
+                print("Could not parse Gemini response")
+
 
         # Apply stemming and remove stopwords
         for headline in combined_headlines:
