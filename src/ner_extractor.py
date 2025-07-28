@@ -1,5 +1,8 @@
 import spacy
 from spacy import displacy
+import spacy.cli
+
+spacy.cli.download("en_core_web_sm")
 # from transformers import pipeline
 
 class NERExtractor:
